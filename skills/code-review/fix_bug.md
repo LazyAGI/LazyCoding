@@ -47,6 +47,30 @@ lazyllm review-local --base main --no-uncommitted --output review.json
 lazyllm review-local --base main --clear-checkpoint --output review.json
 ```
 
+### Step A-1.5: Create fix progress tracking file
+
+**Before processing any issue**, create a file `fix_progress.md` in the current directory. This file is the single source of truth — update it after every issue, and use it (not context memory) for the final summary.
+
+```markdown
+# Fix Progress
+
+## Source: review.json
+## Started: {timestamp}
+
+| ID | Severity | File | Line | Verdict | Status | Notes |
+|----|----------|------|------|---------|--------|-------|
+| 1  | critical | src/foo.py | 42 | Reliable | pending | |
+| 2  | normal   | src/bar.py | 10 | pending  | pending | |
+...
+```
+
+Rules for maintaining this file:
+- Populate the full issue list from `review.json` before fixing anything
+- After judging each issue, update `Verdict` to `Reliable` / `Not Reliable` / `Reliable (pre-existing, deferred)`
+- After fixing, update `Status` to `fixed` / `rejected` / `deferred` / `skipped`
+- Fill `Notes` with a one-line summary of the fix or rejection reason
+- **Never skip updating this file** — it prevents data loss when context is long
+
 ### Step A-2: Read and understand review.json
 
 ```json
@@ -75,19 +99,21 @@ lazyllm review-local --base main --clear-checkpoint --output review.json
 | Real bug or security issue | Reliable | Fix the code |
 | Already fixed elsewhere | Not Reliable | Record, skip |
 | AI misunderstood the logic | Not Reliable | Record rejection reason |
-| Pre-existing issue (not from this change) | Case-by-case | Fix if trivial, open issue if complex |
+| Pre-existing issue (not from this change) | **Reliable** | Fix if trivial; if complex, skip for now but **mark as Reliable (pre-existing, deferred) in report** |
 | Style conflict with project conventions | Not Reliable | Record, skip |
 
 Use `file` + `line` to locate the code, apply the fix guided by `suggestion`. Only change code directly related to the issue — preserve existing style.
 
-### Step A-4: Generate fix report
+### Step A-4: Generate fix report from tracking file
+
+**Do not rely on context memory.** Read `fix_progress.md` and summarize from it:
 
 ```markdown
 # Review Fix Report (Local)
 
 ## Overview
 - Issues scanned: N (critical: X, normal: Y, suggestion: Z)
-- Fixed: A | Rejected: B | Skipped: C (suggestion, optional)
+- Fixed: A | Rejected: B | Deferred (pre-existing, reliable): D | Skipped: C (suggestion, optional)
 
 ## Fixed
 
@@ -99,6 +125,12 @@ Use `file` + `line` to locate the code, apply the fix guided by `suggestion`. On
 
 ### Issue #2
 **Reason**: False positive — variable is guaranteed non-null by the caller
+
+## Deferred — Reliable (Pre-existing, Not Fixed This Round)
+
+### Issue #3 — src/bar.py:88
+**Problem**: Division by zero when denominator is 0 (pre-existing, not introduced by this change)
+**Verdict**: Reliable — real bug, but pre-existing; deferred to a follow-up fix
 
 ## Unresolved (suggestion level, optional)
 - Issue #5: Consider adding type annotations (low priority)
@@ -115,6 +147,30 @@ Use this mode when fixing review comments on a remote PR (GitHub / GitLab / Gite
 - `gh` CLI installed and authenticated (`gh auth login`)
 - Read/write access to the target PR
 - PR number and repository name (`owner/repo` format)
+
+---
+
+## Step B-0: Create fix progress tracking file
+
+**Before fetching or processing any comment**, create `fix_progress.md` in the current directory. This file is the single source of truth — update it after every comment, and use it (not context memory) for the final summary.
+
+```markdown
+# Fix Progress
+
+## Source: PR #{PR} — {OWNER}/{REPO}
+## Started: {timestamp}
+
+| Comment ID | File | Line | Verdict | Status | Notes |
+|------------|------|------|---------|--------|-------|
+(populate after Step B-1)
+```
+
+Rules for maintaining this file:
+- Populate the full comment list after fetching in Step B-1
+- After judging each comment, update `Verdict` to `Reliable` / `Not Reliable` / `Reliable (pre-existing, deferred)`
+- After fixing or replying, update `Status` to `fixed` / `rejected` / `deferred` / `replied`
+- Fill `Notes` with a one-line summary of the fix or rejection reason
+- **Never skip updating this file** — it prevents data loss when context is long
 
 ---
 
@@ -158,7 +214,7 @@ For every comment, determine whether it is **Reliable** or **Not Reliable**:
 
 - Do not accept a comment just because "others said so"
 - Architectural issues introduced by this PR **must be fixed**
-- Pre-existing issues: fix if trivial, otherwise open/link a tracking issue
+- Pre-existing issues: **always Reliable** — fix if trivial; if complex, skip for now but **mark as Reliable (pre-existing, deferred) in the report**
 - Always verify whether the issue is already resolved before acting
 - Avoid over-fixing: only modify code when the comment is valid and actionable
 
@@ -195,15 +251,14 @@ For Not Reliable comments, reply with a clear rejection reason.
 
 ---
 
-## Step B-5: Generate Fix Report
+## Step B-5: Generate Fix Report from tracking file
 
-After processing all comments, output a structured report:
+**Do not rely on context memory.** Read `fix_progress.md` and summarize from it:
 
 ```markdown
-# Review Fix Report (PR)
 
 ## Summary
-- Total comments: N | Fixed: X | Rejected: Y | Not Applicable: Z
+- Total comments: N | Fixed: X | Rejected: Y | Deferred (pre-existing, reliable): D | Not Applicable: Z
 
 ## Fixed
 
@@ -218,6 +273,12 @@ After processing all comments, output a structured report:
 | Comment ID | Reason |
 |------------|--------|
 | 3 | Already fixed in commit abc123 |
+
+## Deferred — Reliable (Pre-existing, Not Fixed This Round)
+
+| Comment ID | File | Line | Problem | Reason for Deferral |
+|------------|------|------|---------|---------------------|
+| 5 | bar.py | 88 | Division by zero when denominator is 0 | Pre-existing bug, complex to fix safely; tracked for follow-up |
 
 ## Unresolved
 

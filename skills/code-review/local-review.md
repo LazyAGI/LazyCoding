@@ -103,7 +103,7 @@ critical → normal → suggestion
 | Real bug or security issue | Reliable | Fix the code |
 | Already fixed elsewhere | Not Reliable | Record, skip |
 | AI misunderstood the logic | Not Reliable | Record rejection reason |
-| Pre-existing issue (not introduced by this change) | Case-by-case | Fix if trivial, open issue if complex |
+| Pre-existing issue (not introduced by this change) | **Reliable** | Fix if trivial; if complex, skip for now but **mark as Reliable (pre-existing, deferred) in report** |
 | Style conflict with project conventions | Not Reliable | Record, skip |
 
 ### Step 4: Locate and fix
@@ -120,9 +120,7 @@ Use `file` + `line` to locate the code, apply the fix guided by `suggestion`:
 
 ## Overview
 - Issues scanned: N (critical: X, normal: Y, suggestion: Z)
-- Fixed: A
-- Rejected: B (Not Reliable)
-- Skipped: C (suggestion level, optional)
+- Fixed: A | Rejected: B (Not Reliable) | Deferred (pre-existing, reliable): D | Skipped: C (suggestion, optional)
 
 ## Fixed issues
 
@@ -154,3 +152,17 @@ Force a full restart:
 ```bash
 lazyllm review-local --base main --clear-checkpoint --output review.json
 ```
+
+---
+
+## Next step: Fix issues from review.json
+
+Once you have `review.json`, use the fix skill to judge, fix, and report all issues:
+
+→ Follow **[fix_bug.md — Mode A: Local Review](fix_bug.md)**
+
+Key points of the fix workflow:
+- Create `fix_progress.md` first to track every issue in real time — prevents data loss from long context
+- Judge each issue (Reliable / Not Reliable / Reliable pre-existing deferred) before fixing
+- Process by priority: `critical` → `normal` → `suggestion`
+- Generate the final report by reading `fix_progress.md`, not from memory
