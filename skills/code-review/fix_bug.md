@@ -251,6 +251,20 @@ For Not Reliable comments, reply with a clear rejection reason.
 
 ---
 
+## Step B-4.5: Commit & Push
+
+> **Only do this step when the task is explicitly "fix review comments on a specific PR".**
+> Do NOT commit/push when doing general code edits, doc updates, refactoring, or any task
+> that is not directly addressing PR review comments.
+
+```bash
+git add -A
+git commit -m "fix: address review comments on PR #{PR_NUMBER}"
+git push
+```
+
+---
+
 ## Step B-5: Generate Fix Report from tracking file
 
 **Do not rely on context memory.** Read `fix_progress.md` and summarize from it:
@@ -304,7 +318,7 @@ lazyllm review-local --base main --output review.json
 
 # 2. AI reads review.json, judges and fixes issues
 
-# 3. Commit fixes
+# 3. Commit fixes (only when task is fixing review comments on a specific PR)
 git add -A && git commit -m "fix: address local review issues"
 git push
 ```
@@ -323,7 +337,7 @@ gh api --method POST \
   --field in_reply_to=123456 \
   --field body="Fixed: changed type of \`x\` from \`str\` to \`Optional[str]\` and added a None check."
 
-# 4. Commit and push
+# 4. Commit and push (only when task is fixing review comments on a specific PR)
 git add -A && git commit -m "fix: address review comments on PR #42"
 git push
 ```

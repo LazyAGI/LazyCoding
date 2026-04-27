@@ -15,10 +15,16 @@ description: >-
 
 ## Installation (minimal)
 
-Only the core package is needed — no extra dependencies for review:
+Core package plus MCP (required for DeepWiki and other MCP-based tools):
 
 ```bash
-pip install lazyllm
+pip install lazyllm "mcp>=1.7.0"
+```
+
+Or use the bundled extra:
+
+```bash
+pip install "lazyllm[agent-advanced]"
 ```
 
 For GitHub App authentication (JWT):
@@ -26,6 +32,21 @@ For GitHub App authentication (JWT):
 ```bash
 pip install PyJWT cryptography
 ```
+
+> **Note:** After installing, check the version:
+> ```bash
+> pip show lazyllm | grep Version
+> ```
+> If the version is **≤ 0.7.6**, the `lazyllm review` and `lazyllm review-local` commands are not available yet.
+> In that case, clone the latest code directly from GitHub and add the project root to `PYTHONPATH`:
+>
+> ```bash
+> git clone https://github.com/LazyAGI/LazyLLM.git
+> export PYTHONPATH=/path/to/LazyLLM:$PYTHONPATH
+> ```
+>
+> Replace `/path/to/LazyLLM` with the actual clone path (e.g. `~/LazyLLM`).
+> No installation needed — the `lazyllm review` / `lazyllm review-local` commands will work immediately.
 
 ---
 
