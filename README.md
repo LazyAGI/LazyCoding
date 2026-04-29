@@ -4,6 +4,17 @@ A collection of Agent Skills to help you write better code with LLMs — coverin
 
 ## Skills
 
+### Coding (`skills/coding/`)
+
+End-to-end coding workflow: task kickoff → coding standards → pre-commit checklist.
+
+| Skill | Description |
+|-------|-------------|
+| [SKILL.md](skills/coding/SKILL.md) | Entry point — module index and usage guide |
+| [a-task-kickoff.md](skills/coding/a-task-kickoff.md) | Requirement confirmation, technical design, task breakdown |
+| [b-coding-standards.md](skills/coding/b-coding-standards.md) | 9 quality rules (B.1–B.9) with Bad/Good examples — load in full during coding |
+| [c-pre-commit.md](skills/coding/c-pre-commit.md) | Self-review checklist, task-type checks, version control |
+
 ### Code Review (`skills/code-review/`)
 
 AI-powered code review and bug fixing using the `lazyllm review` CLI.
