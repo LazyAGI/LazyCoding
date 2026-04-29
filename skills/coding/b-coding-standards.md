@@ -123,8 +123,7 @@ if ckpt.get('key') is not None:
     value = ckpt.get('key') or []  # called twice
 
 # Good — cache to a variable
-value = ckpt.get('key')
-if value is not None:
+if (value := ckpt.get('key')) is not None:
     value = value or []
 ```
 
@@ -156,7 +155,8 @@ if retry_count > MAX_RETRIES:
 ```python
 # Bad — class name repeated in method name
 class DocumentParser:
-    def get_document_parser_instance(cls): ...
+    @classmethod
+    def get_rag_document_parser_instance(cls): ...
 
 # Good
 class DocumentParser:
@@ -226,12 +226,9 @@ x = x + 1  # offset for 1-based line numbers in GitHub API
 
   # Good — early return
   def process(user):
-      if user is None:
-          return
-      if not user.is_active:
-          return
-      if not user.has_permission('edit'):
-          return
+      if user is None: return
+      if not user.is_active: return
+      if not user.has_permission('edit'): return
       do_edit(user)
   ```
 
@@ -246,8 +243,7 @@ x = x + 1  # offset for 1-based line numbers in GitHub API
       xxx(geta())
 
   # After
-  if not a:
-      a = geta()
+  if not a: a = geta()
   xxx(a)
   ```
 
@@ -257,7 +253,10 @@ x = x + 1  # offset for 1-based line numbers in GitHub API
 
   ```python
   # Bad — builds entire list in memory just to iterate
-  total = sum([compute(x) for x in large_dataset])
+  result = []
+  for x in large_dataset:
+      result.append(compute(x))
+  total = sum(result)
 
   # Good — generator, no intermediate list
   total = sum(compute(x) for x in large_dataset)
