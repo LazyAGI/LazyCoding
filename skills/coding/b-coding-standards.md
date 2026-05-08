@@ -114,6 +114,16 @@ for f in as_completed(futs, timeout=30):
 - **Magic numbers**: extract as named constants with a comment explaining the design intent.
 - **Interface changes**: when modifying a public function signature, update all call sites
   atomically — never leave the codebase in a state where only some callers are updated.
+- **Find all call sites before touching a signature**: before changing a function name,
+  removing a parameter, or altering return type, run a project-wide search (e.g.
+  `grep -r "function_name" --include="*.py"`) and list every call site. Only then make
+  the change. Do not rely on IDE "find usages" alone — it may miss dynamic calls or
+  string-based dispatch.
+- **Interface simplicity over flexibility**: prefer one canonical calling convention over
+  multiple equivalent ones. When a singular form (`xxx`) and a plural form (`xxxs`) both
+  exist for the same concept, keep only the plural form and remove the singular. When both
+  `id` and `name` are accepted for the same lookup, pick one and remove the other. Dual
+  interfaces double the maintenance surface and introduce ambiguity at call sites.
 
 **Examples:**
 
