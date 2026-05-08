@@ -37,6 +37,8 @@ Testing:
 [ ] New / modified public functions have corresponding test cases
 [ ] Refactoring did not change test semantics (tests still correctly describe behavior)
 [ ] Edge cases and error paths are covered
+[ ] Database operations: NOT NULL constraints, unique indexes, and default values are
+    satisfied for all code paths (including newly created rows, not just updates)
 
 Documentation:
 [ ] Core flow / interface / return-value changes are reflected in docs

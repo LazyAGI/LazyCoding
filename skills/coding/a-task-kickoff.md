@@ -67,3 +67,11 @@ Break the task into independent sub-tasks, each of which:
 
 **Refactoring special rule**: confirm that existing tests correctly describe the behavior of
 the code being changed before touching anything. Never modify tests just to make them pass.
+
+**Test failure triage rule**: when a test fails after a refactor, determine the cause before
+acting:
+- If the test is **outdated** (it was testing the old design that is intentionally being
+  replaced), update the test to match the new design.
+- If the test is **correct** and the refactor broke real behavior, fix the code.
+- **Never revert a correct refactor just to make a test pass.** Reverting to satisfy a
+  stale test undoes the design work and reintroduces the problem being solved.
